@@ -2,6 +2,8 @@ require 'savon'
 require 'savon_spec'
 require './lib/rconomic'
 
+require 'rspec-prof'
+
 RSpec.configure do |config|
   config.mock_with :mocha
   config.include Savon::Spec::Macros
@@ -11,7 +13,6 @@ RSpec.configure do |config|
     HTTPI.expects(:get).never
     HTTPI.expects(:post).never
   end
-
 end
 
 Savon.configure do |config|
@@ -27,6 +28,19 @@ module Savon
       def resolve_document
         File.read(File.expand_path('../../lib/economic/economic.wsdl', __FILE__))
       end
+    end
+  end
+end
+
+# parse_namespaces is a expensive operation (primarily because it uses
+# Nokogiri::XML::Document#collect_namespaces which is terribly expensive) and we seemingly don't
+# need the automatic namespace support of Savon/Wasabi when testing.
+#
+# Stubbing out this method shaves ~85% of a full spec run time on my machine.
+module Wasabi
+  class Parser
+    def parse_namespaces
+      {}
     end
   end
 end
