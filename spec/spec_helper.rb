@@ -2,8 +2,6 @@ require 'savon'
 require 'savon_spec'
 require './lib/rconomic'
 
-require 'rspec-prof'
-
 RSpec.configure do |config|
   config.mock_with :mocha
   config.include Savon::Spec::Macros
