@@ -4,6 +4,7 @@ require "savon/mock/spec_helper"
 require './lib/rconomic'
 
 RSpec.configure do |config|
+  config.mock_with :mocha
   config.include Savon::SpecHelper
 
   config.before(:all) { savon.mock! }
@@ -11,8 +12,8 @@ RSpec.configure do |config|
 
   config.before :each do
     # Ensure we don't actually send requests over the network
-    HTTPI.should_receive(:get).never
-    HTTPI.should_receive(:post).never
+    HTTPI.expects(:get).never
+    HTTPI.expects(:post).never
   end
 end
 
