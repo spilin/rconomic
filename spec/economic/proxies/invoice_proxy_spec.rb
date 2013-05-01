@@ -27,11 +27,10 @@ describe Economic::InvoiceProxy do
 
   describe ".find" do
     before :each do
-      savon.stubs('Invoice_GetData').returns(:success)
+      expect_api_request(:invoice_get_data, {"entityHandle"=>{"Number"=>42}}, :success)
     end
 
     it "gets invoice data from API" do
-      savon.expects('Invoice_GetData').with('entityHandle' => {'Number' => 42}).returns(:success)
       subject.find(42)
     end
 
@@ -45,23 +44,23 @@ describe Economic::InvoiceProxy do
     let(:unto) { Time.now }
 
     it "should be able to return a single current invoice" do
-      savon.expects('Invoice_FindByDateInterval').with('first' => from.iso8601, 'last' => unto.iso8601, :order! => ['first', 'last']).returns(:single)
-      savon.expects('Invoice_GetDataArray').returns(:single)
+      expect_api_request(:invoice_find_by_date_interval, {'first' => from.iso8601, 'last' => unto.iso8601, :order! => ['first', 'last']}, :single)
+      expect_api_request(:invoice_get_data_array, {"entityHandles"=>{"InvoiceHandle"=>[{"Number"=>1}]}}, :single)
       results = subject.find_by_date_interval(from, unto)
       results.size.should == 1
       results.first.should be_instance_of(Economic::Invoice)
     end
 
     it "should be able to return multiple invoices" do
-      savon.expects('Invoice_FindByDateInterval').with('first' => from.iso8601, 'last' => unto.iso8601, :order! => ['first', 'last']).returns(:many)
-      savon.expects('Invoice_GetDataArray').returns(:multiple)
+      expect_api_request(:invoice_find_by_date_interval, {'first' => from.iso8601, 'last' => unto.iso8601, :order! => ['first', 'last']}, :many)
+      expect_api_request(:invoice_get_data_array, {"entityHandles"=>{"InvoiceHandle"=>[{"Number"=>1}, {"Number"=>2}]}}, :multiple)
       results = subject.find_by_date_interval(from, unto)
       results.size.should == 2
       results.first.should be_instance_of(Economic::Invoice)
     end
 
     it "should be able to return nothing" do
-      savon.expects('Invoice_FindByDateInterval').with('first' => from.iso8601, 'last' => unto.iso8601, :order! => ['first', 'last']).returns(:none)
+      expect_api_request(:invoice_find_by_date_interval, {'first' => from.iso8601, 'last' => unto.iso8601, :order! => ['first', 'last']}, :none)
       results = subject.find_by_date_interval(from, unto)
       results.size.should == 0
     end

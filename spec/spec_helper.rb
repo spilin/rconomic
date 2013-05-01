@@ -17,6 +17,12 @@ RSpec.configure do |config|
   end
 end
 
+def expect_api_request(action, data, response)
+  savon.expects(action)
+    .with(:message => data)
+    .returns(fixture(action, response))
+end
+
 def fixture(action, response)
   fixture_path = File.expand_path("../fixtures", __FILE__)
   File.read(File.join(fixture_path, action.to_s, "#{response}.xml"))
