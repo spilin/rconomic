@@ -82,12 +82,9 @@ module Economic
     def get_data(handle)
       handle = Entity::Handle.new(handle)
 
-      entity_hash = session.request(entity_class.soap_action(:get_data)) do
-        soap.body = {
-          'entityHandle' => handle.to_hash
-        }
-      end
-      entity_hash
+      session.request(entity_class.soap_action(:get_data), {
+        'entityHandle' => handle.to_hash
+      })
     end
 
     # Adds item to proxy unless item already exists in the proxy
@@ -116,9 +113,11 @@ module Economic
       return [] unless handles && handles.any?
 
       entity_class_name_for_soap_request = entity_class.name.split('::').last
-      response = session.request(entity_class.soap_action(:get_data_array)) do
-        soap.body = {'entityHandles' => {"#{entity_class_name_for_soap_request}Handle" => handles.collect(&:to_hash)}}
-      end
+      response = session.request(entity_class.soap_action(:get_data_array), {
+        'entityHandles' => {
+          "#{entity_class_name_for_soap_request}Handle" => handles.collect(&:to_hash)
+        }
+      })
       [response["#{entity_class.key}_data".intern]].flatten
     end
   end

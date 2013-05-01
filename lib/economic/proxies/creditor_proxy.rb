@@ -10,14 +10,12 @@ module Economic
     include FindByNumber
 
     def create_simple(opts)
-      response = session.request(entity_class.soap_action('Create')) do
-        soap.body = {
-          'number' => opts[:number],
-          'creditorGroupHandle' => { 'Number' => opts[:creditor_group_handle][:number] },
-          :name => opts[:name],
-          :vatZone => opts[:vat_zone]
-        }
-      end
+      response = session.request(entity_class.soap_action('Create'), {
+        'number' => opts[:number],
+        'creditorGroupHandle' => { 'Number' => opts[:creditor_group_handle][:number] },
+        :name => opts[:name],
+        :vatZone => opts[:vat_zone]
+      })
 
       find(response)
     end

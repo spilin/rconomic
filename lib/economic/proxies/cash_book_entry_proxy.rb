@@ -3,9 +3,7 @@ require 'economic/proxies/entity_proxy'
 module Economic
   class CashBookEntryProxy < EntityProxy
     def all
-      entity_hash = session.request(CashBookProxy.entity_class.soap_action(:get_entries)) do
-        soap.body = { "cashBookHandle" => owner.handle.to_hash }
-      end
+      entity_hash = session.request(CashBookProxy.entity_class.soap_action(:get_entries), {"cashBookHandle" => owner.handle.to_hash})
 
       if entity_hash != {}
         [ entity_hash.values.first ].flatten.each do |id_hash|
@@ -56,9 +54,13 @@ module Economic
     end
 
     def set_due_date(id, date)
-      session.request(entity_class.soap_action("SetDueDate")) do
-        soap.body = { 'cashBookEntryHandle' => { 'Id1' => owner.handle[:number], 'Id2' => id }, :value => date }
-      end
+      session.request(entity_class.soap_action("SetDueDate"), {
+        'cashBookEntryHandle' => {
+          'Id1' => owner.handle[:number],
+          'Id2' => id
+        },
+        :value => date
+      })
     end
 
     protected
@@ -67,13 +69,11 @@ module Economic
       handle_name = handle_name_for_action(action)
       handle_key = Economic::Support::String.underscore(handle_name).intern
 
-      response = session.request(entity_class.soap_action(action)) do
-        data = ActiveSupport::OrderedHash.new
-        data["cashBookHandle"] = { 'Number' => owner.handle[:number] }
-        data[handle_name] = { 'Number'  => handles[handle_key][:number] } if handles[handle_key]
-        data["contraAccountHandle"] = { 'Number'  => handles[:contra_account_handle][:number] } if handles[:contra_account_handle]
-        soap.body = data
-      end
+      data = ActiveSupport::OrderedHash.new
+      data["cashBookHandle"] = { 'Number' => owner.handle[:number] }
+      data[handle_name] = { 'Number'  => handles[handle_key][:number] } if handles[handle_key]
+      data["contraAccountHandle"] = { 'Number'  => handles[:contra_account_handle][:number] } if handles[:contra_account_handle]
+      response = session.request(entity_class.soap_action(action), data)
 
       find(response)
     end

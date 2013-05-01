@@ -21,14 +21,26 @@ describe Economic::Session do
 
   describe "connect" do
     it "connects to e-conomic with authentication details" do
-      savon.expects('Connect').with(has_entries(:agreementNumber => 123456, :userName => 'api', :password => 'passw0rd')).returns(:success)
+      savon.expects(:connect).with(:message => {
+        :agreementNumber => 123456,
+        :userName => 'api',
+        :password => 'passw0rd'
+      }).returns(fixture(:connect, :success))
       subject.connect
     end
 
     it "stores the cookie for later connections" do
-      savon.expects('Connect').returns({:headers => {'Set-Cookie' => 'cookie'}})
+      savon.expects(:connect).with(:message => {
+        :agreementNumber => 123456,
+        :userName => 'api',
+        :password => 'passw0rd'
+      }).returns({
+        :headers => {'Set-Cookie' => 'cookie'},
+        :code => 200,
+        :body => ''
+      })
       subject.connect
-      subject.client.http.headers['Cookie'].should == 'cookie'
+      subject.cookies.first.name_and_value.should == 'cookie'
     end
   end
 
@@ -77,8 +89,4 @@ describe Economic::Session do
       subject.debtors.should === subject.debtors
     end
   end
-
-  describe "request" do
-  end
-
 end

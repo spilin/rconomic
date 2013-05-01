@@ -1,6 +1,6 @@
 module Economic
   class Session
-    attr_accessor :agreement_number, :user_name, :password
+    attr_accessor :agreement_number, :user_name, :password, :cookies
 
     def initialize(agreement_number, user_name, password)
       self.agreement_number = agreement_number
@@ -10,22 +10,21 @@ module Economic
 
     # Returns the Savon::Client used to connect to e-conomic
     def client
-      @client ||= Savon::Client.new do
-        wsdl.document = File.expand_path(File.join(File.dirname(__FILE__), "economic.wsdl"))
-      end
+      @client ||= Savon.client({
+        :wsdl => File.expand_path(File.join(File.dirname(__FILE__), "economic.wsdl"))
+      })
     end
 
     # Authenticates with e-conomic
     def connect
-      response = client.request :economic, :connect do
-        soap.body = {
+      response = client.call(:connect,
+        :message => {
           :agreementNumber => self.agreement_number,
           :userName => self.user_name,
-          :password => self.password,
-          :order! => [:agreementNumber, :userName, :password]
+          :password => self.password
         }
-      end
-      client.http.headers["Cookie"] = response.http.headers["Set-Cookie"]
+      )
+      @cookies = response.http.cookies
     end
 
     # Provides access to the DebtorContacts
@@ -77,8 +76,10 @@ module Economic
       @entries ||= EntryProxy.new(self)
     end
 
-    def request(action, &block)
-      response = client.request :economic, action, &block
+    def request(action, data = nil)
+      raise "Session#request called with a block, which is deprecated" if block_given?
+
+      response = client.call(action, :message => data, :cookies => cookies)
       response_hash = response.to_hash
 
       response_key = "#{action}_response".intern
