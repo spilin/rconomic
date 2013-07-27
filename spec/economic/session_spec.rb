@@ -22,35 +22,44 @@ describe Economic::Session do
   end
 
   describe "connect" do
+    let(:authentication_details) { {:agreementNumber => 123456, :userName => 'api', :password => 'passw0rd'} }
+
     it "connects to e-conomic with authentication details" do
-      mock_request('Connect', has_entries(:agreementNumber => 123456, :userName => 'api', :password => 'passw0rd'), :success)
+      mock_request(:connect, authentication_details, :success)
       subject.connect
     end
 
     it "stores the cookie for later requests" do
-      mock_request('Connect', nil, {:headers => {'Set-Cookie' => 'cookie'}})
+      stub_request(
+        :connect,
+        authentication_details,
+        {:headers => {'Set-Cookie' => 'cookie'}, :code => 200, :body => "OK"}
+      )
       subject.connect
-      client.stubs(:request).returns({})
-      subject.request(:foo) { }
-      client.http.headers['Cookie'].should == 'cookie'
+      client.stub(:call).and_return({})
+      subject.request(:invoice_get_all) { }
+      subject.instance_variable_get(:@cookie).collect(&:name_and_value).should == ['cookie']
     end
 
     it "updates the cookie for new sessions" do
-      mock_request('Connect', nil, {:headers => {'Set-Cookie' => 'cookie'}})
+      stub_request(
+        :connect,
+        authentication_details,
+        {:headers => {'Set-Cookie' => 'cookie'}, :code => 200, :body => "OK"}
+      )
       subject.connect
+
       other_session = Economic::Session.new(123456, 'api', 'passw0rd')
-      mock_request('Connect', nil, {:headers => {'Set-Cookie' => 'other-cookie'}})
+      stub_request(
+        :connect,
+        {:agreementNumber => 123456, :userName => 'api', :password => 'passw0rd'},
+        {:headers => {'Set-Cookie' => 'other-cookie'}, :code => 200, :body => "OK"}
+      )
       other_session.connect
 
-      client.stubs(:request).returns({})
-      subject.request(:foo) { }
-      client.http.headers['Cookie'].should == 'cookie'
-    end
-
-    it "removes existing cookie header before connecting" do
-      client.http.headers.expects(:delete).with('Cookie')
-      stub_request('Connect', nil, {:headers => {'Set-Cookie' => 'cookie'}})
-      subject.connect
+      client.stub(:call).and_return({})
+      subject.request(:invoice_get_all) { }
+      subject.instance_variable_get(:@cookie).collect(&:name_and_value).should == ['cookie']
     end
   end
 
@@ -102,22 +111,22 @@ describe Economic::Session do
 
   describe "request" do
     it "sends a request to API" do
-      client.expects(:request).with(:economic, :foo).returns({})
-      subject.request(:foo, {})
+      client.should_receive(:call).with(:invoice_get_all, instance_of(Hash)).and_return({})
+      subject.request(:invoice_get_all, {})
     end
 
     it "sends data if given" do
-      mock_request('CurrentInvoice_GetAll', {:bar => :baz}, :none)
+      mock_request(:current_invoice_get_all, {:bar => :baz}, :none)
       subject.request(:current_invoice_get_all, {:bar => :baz})
     end
 
     it "returns a hash with data" do
-      stub_request('CurrentInvoice_GetAll', nil, :single)
+      stub_request(:current_invoice_get_all, nil, :single)
       subject.request(:current_invoice_get_all).should == {:current_invoice_handle => {:id => "1"}}
     end
 
     it "returns an empty hash if no data returned" do
-      stub_request('CurrentInvoice_GetAll', nil, :none)
+      stub_request(:current_invoice_get_all, nil, :none)
       subject.request(:current_invoice_get_all).should be_empty
     end
   end
