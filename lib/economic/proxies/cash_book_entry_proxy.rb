@@ -63,6 +63,14 @@ module Economic
                             :value => date)
     end
 
+    def delete(id)
+      request("Delete", {
+          'cashBookEntryHandle' => {
+              'Id1' => owner.handle[:number], 'Id2' => id
+          }
+      })
+    end
+
     protected
 
     def create_cash_book_entry_for_handles(handles, action, _foobar = nil)
