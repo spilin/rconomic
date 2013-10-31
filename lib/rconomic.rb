@@ -43,5 +43,29 @@ require 'economic/proxies/actions/find_by_name'
 # * Basic validations; ie check for nil values before submitting to API
 
 module Economic
+  # Configures global settings for Economic
+  #   Economic.configure do |config|
+  #     config.agreement = 'agreement'
+  #     config.user_id = 'user_id'
+  #     config.password = 'password'
+  #   end
+  def self.configure(&block)
+    yield @config ||= Configuration.new
+    raise 'Please provide agreement, user_id and password' unless %w{agreement user_id password}.all? { |attr| @config.send(attr.to_sym).present? }
+  end
+
+  def self.config
+    @config
+  end
+
+  def self.client
+    @client ||= Session.new(self.config.agreement, self.config.user_id, self.config.password)
+    @client.connect
+    @client
+  end
+
+  class Configuration
+    attr_accessor :agreement, :user_id, :password
+  end
 end
 
