@@ -48,7 +48,7 @@ module Economic
       data['Id'] = id unless id.blank?
       data['CreditorHandle'] = { 'Number' => creditor_handle[:number] } unless creditor_handle.blank?
       data['Name'] = name unless name.blank?
-      data['Number'] = handle.number
+      data['Number'] = number unless number.blank?
       data['TelephoneNumber'] = telephone_number unless telephone_number.blank?
       data['Email'] = email unless email.blank?
       data['Comments'] = comments unless comments.blank?
