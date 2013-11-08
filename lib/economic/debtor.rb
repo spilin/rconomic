@@ -69,7 +69,7 @@ module Economic
       data['CINumber'] = ci_number unless ci_number.blank?
       data['TermOfPaymentHandle'] = { 'Id' => term_of_payment_handle[:id] } unless term_of_payment_handle.blank?
       data['LayoutHandle'] = { 'Id' => layout_handle[:id] } unless layout_handle.blank?
-      data['AttentionHandle'] = attention_handle unless attention_handle.blank?
+      data['AttentionHandle'] = { 'Id' => attention_handle[:id] } unless attention_handle.blank?
       data['YourReferenceHandle'] = your_reference_handle unless your_reference_handle.blank?
       data['OurReferenceHandle'] = our_reference_handle unless our_reference_handle.blank?
       data['Balance'] = balance unless balance.blank?
