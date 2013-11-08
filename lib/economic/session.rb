@@ -71,8 +71,15 @@ module Economic
       @contacts ||= DebtorContactProxy.new(self)
     end
 
-    # Provides access to the current invoices - ie invoices that haven't yet
-    # been booked
+    def creditor_contacts
+      @creditor_contacts ||= CreditorContactProxy.new(self)
+    end
+
+    def debtor_contacts
+      @debtor_contacts ||= DebtorContactProxy.new(self)
+    end
+
+    # Provides access to the current invoices - ie invoices that haven't yet been booked
     def current_invoices
       @current_invoices ||= CurrentInvoiceProxy.new(self)
     end
