@@ -16,6 +16,10 @@ module Economic
       CashBookEntryProxy.new(self)
     end
 
+    def get_next_voucher_number
+      request(:get_next_voucher_number, { 'cashBookHandle' => handle.to_hash }).to_i
+    end
+
     # Books all entries in the cashbook. Returns book result.
     def book
       response = request(:book, {

@@ -26,6 +26,45 @@ module Economic
       create_cash_book_entry_for_handles(handles, 'CreateFinanceVoucher')
     end
 
+    def create_cash_book_entries_for_handles(handles_collection)
+      voucher_number = owner.get_next_voucher_number
+      result = ''
+      xml = Builder::XmlMarkup.new(:target => result)
+      xml.tag!('economic:dataArray') do
+        handles_collection.each do |handles|
+          xml.tag!('economic:CashBookEntryData') do
+            xml.tag!('economic:Type', handles['Type'])
+            xml.tag!('economic:CashBookHandle') do
+              xml.tag!('economic:Number', owner.handle[:number])
+            end
+            xml.tag!('economic:AccountHandle') do
+              xml.tag!('economic:Number', handles['AccountHandle']['Number'])
+            end if handles['AccountHandle']
+            xml.tag!('economic:DebtorHandle') do
+              xml.tag!('economic:Number', handles['DebtorHandle']['Number'])
+            end if handles['DebtorHandle']
+            xml.tag!('economic:CreditorHandle') do
+              xml.tag!('economic:Number', handles['CreditorHandle']['Number'])
+            end if handles['CreditorHandle']
+            xml.tag!('economic:Date', handles['Date'].to_datetime.strftime('%Y-%m-%dT%H:%M:%S%Z')) if handles['Date']
+            xml.tag!('economic:VoucherNumber', voucher_number)
+            xml.tag!('economic:Text', handles['Text']) if handles['Text']
+            xml.tag!('economic:AmountDefaultCurrency', handles['Amount'])
+            xml.tag!('economic:CurrencyHandle') do
+              xml.tag!('economic:Code', 'NOK')
+            end
+            xml.tag!('economic:Amount', handles['Amount'])
+            xml.tag!('economic:VatAccountHandle') do
+              xml.tag!('economic:VatCode', handles['VatAccountHandle']['VatCode'])
+            end if handles['VatAccountHandle']
+          end
+        end
+      end
+
+      request('CreateFromDataArray', result)
+      #find(response)
+    end
+
     # Creates a debtor payment and returns the cash book entry.
     # Example:
     #   cash_book.entries.create_debtor_payment(

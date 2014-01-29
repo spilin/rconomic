@@ -92,7 +92,7 @@ module Economic
       self.partial = false
       self.persisted = true
     end
-    
+
     # Returns the number of Entity. This does not trigger a load from the API even if Entity is partial
     def number
       @number
