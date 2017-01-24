@@ -48,7 +48,7 @@ module Economic
         ["Id", :id, nil],
         ["CreditorHandle", :creditor_handle, to_hash],
         ["Name", :name],
-        ["Number", :handle, proc { |v| v.number }, :required],
+        ["Number", :number, nil, :required],
         ["TelephoneNumber", :telephone_number],
         ["Email", :email],
         ["Comments", :comments],
