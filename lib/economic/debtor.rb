@@ -63,8 +63,7 @@ module Economic
 
     # Returns the Debtors contacts
     def contacts
-      return [] if handle.empty?
-      @contacts ||= DebtorProxy.new(self).get_debtor_contacts(handle)
+      @contacts ||= DebtorContactProxy.new(self)
     end
 
     def invoices
@@ -105,7 +104,7 @@ module Economic
         ["CINumber", :ci_number],
         ["TermOfPaymentHandle", :term_of_payment_handle, to_hash],
         ["LayoutHandle", :layout_handle, to_hash],
-        ["AttentionHandle", :attention_handle],
+        ["AttentionHandle", :attention_handle, to_hash],
         ["YourReferenceHandle", :your_reference_handle],
         ["OurReferenceHandle", :our_reference_handle],
         ["Balance", :balance]

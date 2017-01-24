@@ -53,7 +53,7 @@ module Economic
     def fields
       [
         ["Handle", :handle, proc { |v| v.to_hash }, :required],
-        ["Id", :handle, proc { |v| v.id }, :required],
+        ["Id", :id, nil, :required],
         ["DebtorHandle", :debtor, proc { |v| v.handle.to_hash }],
         ["Name", :name, nil, :required],
         ["Number", :number],

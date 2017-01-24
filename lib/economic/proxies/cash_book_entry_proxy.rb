@@ -16,6 +16,39 @@ module Economic
       self
     end
 
+    def create_cash_book_entries_for_handles(handles_collection)
+      voucher_number = owner.get_next_voucher_number
+      result = { 'dataArray' => { 'CashBookEntryData' => [] } }
+      result['dataArray']['CashBookEntryData'] = handles_collection.map do |handles|
+        data = {
+          'Type' => handles['Type'],
+          'CashBookHandle' => { 'Number' => owner.handle[:number] },
+        }
+        %w{AccountHandle DebtorHandle CreditorHandle}.each do |handle_name|
+          if handles[handle_name]
+            data[handle_name] = { 'Number' => handles[handle_name]['Number'] }
+          end
+        end
+
+        if handles['Date']
+          data['Date'] = handles['Date'].to_datetime.strftime('%Y-%m-%dT%H:%M:%S%Z')
+        end
+
+        data['VoucherNumber'] = voucher_number
+        data['Text'] = handles['Text'] if handles['Text']
+
+        data['AmountDefaultCurrency'] = handles['Amount']
+        data['CurrencyHandle'] = { 'Code' => 'NOK'}
+        data['Amount'] = handles['Amount']
+        if handles['VatAccountHandle']
+          data['VatAccountHandle'] = { 'VatCode' => handles['VatAccountHandle']['VatCode'] }
+        end
+        data
+      end
+
+      request('CreateFromDataArray', result)
+    end
+
     # Creates a finance voucher and returns the cash book entry.
     # Example:
     #   cash_book.entries.create_finance_voucher(
